@@ -1,0 +1,171 @@
+class Board {
+field Array cells;
+static Array xPos;
+static Array yPos;
+constructor Board create() {
+    // allocate coordinate arrays
+    let xPos = Array.new(9);
+    let yPos = Array.new(9);
+    let cells = Array.new(9);
+
+    // X centers (columns)
+    let xPos[0] = 192;
+    let xPos[1] = 256;
+    let xPos[2] = 320;
+    let xPos[3] = 192;
+    let xPos[4] = 256;
+    let xPos[5] = 320;
+    let xPos[6] = 192;
+    let xPos[7] = 256;
+    let xPos[8] = 320;
+
+    // Y centers (rows)
+    let yPos[0] = 64;
+    let yPos[1] = 64;
+    let yPos[2] = 64;
+    let yPos[3] = 128;
+    let yPos[4] = 128;
+    let yPos[5] = 128;
+    let yPos[6] = 192;
+    let yPos[7] = 192;
+    let yPos[8] = 192;
+
+    // Initialize each board cell to empty (0)
+    let cells[0] = 0;
+    let cells[1] = 0;
+    let cells[2] = 0;
+    let cells[3] = 0;
+    let cells[4] = 0;
+    let cells[5] = 0;
+    let cells[6] = 0;
+    let cells[7] = 0;
+    let cells[8] = 0;
+
+    do renderGrid();
+    return this;
+}
+
+/** Waits for user input and processes a valid move. */
+method int takeTurn(boolean oTurn) {
+    var int key, pos;
+
+    while (true) {
+        let key = Keyboard.keyPressed();
+
+        if ((key > 48) & (key < 58)) {
+            // convert key to array index (1→0, 9→8)
+            let pos = key - 49;
+
+            if (isEmpty(pos)) {
+                do placeMark(pos, oTurn);
+                return pos;
+            }
+        }
+        do Sys.wait(50); // debounce delay
+    }
+    return 0; // never reached
+}
+
+/** true if the given cell is not occupied. */
+method boolean isEmpty(int i) {
+    return (cells[i] = 0);
+}
+
+/** Puts the correct symbol into the grid and stores it. */
+method void placeMark(int i, boolean oTurn) {
+    if (oTurn) {
+        let cells[i] = 1;  // 'O'
+    } else {
+        let cells[i] = -1; // 'X'
+    }
+    do drawSymbol(i, oTurn);
+    return;
+}
+
+/** Draw the TicTacToe grid once. */
+method void renderGrid() {
+    // verticals
+    do Screen.drawLine(224, 32, 224, 224);
+    do Screen.drawLine(288, 32, 288, 224);
+    // horizontals
+    do Screen.drawLine(160, 96, 352, 96);
+    do Screen.drawLine(160, 160, 352, 160);
+    return;
+}
+
+/** Draws a circle (O). */
+method void renderO(int cx, int cy) {
+    do Screen.drawCircle(cx, cy, 20);
+    do Screen.setColor(false);
+    do Screen.drawCircle(cx, cy, 19);
+    do Screen.setColor(true);
+    return;
+}
+
+/** Draws a cross (X). */
+method void renderX(int cx, int cy) {
+    var int l, r, t, b;
+    let l = cx - 15;
+    let r = cx + 15;
+    let t = cy + 15;
+    let b = cy - 15;
+
+    do Screen.drawLine(l, t, r, b);
+    do Screen.drawLine(r, t, l, b);
+    return;
+}
+
+/** Draws symbol corresponding to player at board index. */
+method void drawSymbol(int idx, boolean oTurn) {
+    var int cx, cy;
+    let cx = xPos[idx];
+    let cy = yPos[idx];
+
+    if (oTurn) {
+        do renderO(cx, cy);
+    } else {
+        do renderX(cx, cy);
+    }
+    return;
+}
+
+/** Checks every possible winning line. */
+method boolean checkWinner() {
+    if (
+        sameLine(cells[0], cells[1], cells[2]) |
+        sameLine(cells[3], cells[4], cells[5]) |
+        sameLine(cells[6], cells[7], cells[8]) |
+        sameLine(cells[0], cells[3], cells[6]) |
+        sameLine(cells[1], cells[4], cells[7]) |
+        sameLine(cells[2], cells[5], cells[8]) |
+        sameLine(cells[0], cells[4], cells[8]) |
+        sameLine(cells[2], cells[4], cells[6])
+    ) {
+        return true;
+    }
+    return false;
+}
+
+/** Converts marker code to printable string. */
+method string markToString(int m) {
+    if (m = -1) {
+        return "X";
+    } else {
+        return "O";
+    }
+}
+
+/** Returns true if all 3 positions have the same nonzero marker. */
+method boolean sameLine(int a, int b, int c) {
+    if ((a = 0) | (b = 0) | (c = 0)) {
+        return false;
+    }
+    if ((a = b) & (b = c)) {
+        do Output.printString("Winner detected: ");
+        do Output.printString(markToString(a));
+        do Output.println();
+        return true;
+    }
+    return false;
+}
+}

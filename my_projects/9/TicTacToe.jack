@@ -1,0 +1,8 @@
+class board{
+    field Array cells;
+
+    constructor board new(){
+        let cells = Array.new(9);
+        
+    }   
+}

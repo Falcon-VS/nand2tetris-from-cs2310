@@ -1,0 +1,114 @@
+class Memory {
+    static Array ram;
+    static int freeList;
+    static int heapStart;
+    static int heapEnd;
+
+    function void init() {
+        let ram = 0;
+        let heapStart = 2048;
+        let heapEnd = 16384;
+        let freeList = heapStart;
+        
+        let ram[heapStart] = heapEnd - heapStart;
+        let ram[heapStart + 1] = 0;
+        
+        return;
+    }
+
+    function int peek(int address) {
+        return ram[address];
+    }
+
+    function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
+    }
+
+    function int alloc(int size) {
+        var int block;
+        var int current;
+        var int prev;
+        var int nextBlock;
+        var int blockSize;
+        
+        let current = freeList;
+        let prev = 0;
+        
+        while (~(current = 0)) {
+            let blockSize = ram[current];
+            
+            if (~(blockSize < (size + 2))) {
+                if (blockSize < (size + 4)) {
+                    if (prev = 0) {
+                        let freeList = ram[current + 1];
+                    } else {
+                        let ram[prev + 1] = ram[current + 1];
+                    }
+                    let ram[current] = size + 1;
+                    return current + 1;
+                } else {
+                    let nextBlock = current + size + 2;
+                    let ram[nextBlock] = blockSize - size - 2;
+                    let ram[nextBlock + 1] = ram[current + 1];
+                    
+                    if (prev = 0) {
+                        let freeList = nextBlock;
+                    } else {
+                        let ram[prev + 1] = nextBlock;
+                    }
+                    
+                    let ram[current] = size + 1;
+                    return current + 1;
+                }
+            }
+            
+            let prev = current;
+            let current = ram[current + 1];
+        }
+        
+        return 0;
+    }
+
+    function void deAlloc(Array object) {
+        var int segment;
+        var int size;
+        var int current;
+        var int prev;
+        
+        let segment = object - 1;
+        let size = ram[segment];
+        
+        let current = freeList;
+        let prev = 0;
+        
+        while (~(current = 0) & (current < segment)) {
+            let prev = current;
+            let current = ram[current + 1];
+        }
+        
+        if (prev = 0) {
+            let ram[segment + 1] = freeList;
+            let freeList = segment;
+        } else {
+            let ram[segment + 1] = ram[prev + 1];
+            let ram[prev + 1] = segment;
+        }
+        
+        if (~(current = 0)) {
+            if ((segment + size) = current) {
+                let ram[segment] = size + ram[current];
+                let ram[segment + 1] = ram[current + 1];
+            }
+        }
+        
+        if (~(prev = 0)) {
+            if ((prev + ram[prev]) = segment) {
+                let ram[prev] = ram[prev] + ram[segment];
+                let ram[prev + 1] = ram[segment + 1];
+            }
+        }
+        
+        return;
+    }
+}

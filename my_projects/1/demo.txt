@@ -1,0 +1,15 @@
+~and
+~and16
+~not 
+~mux
+~xor
+~or
+~or8way
+~Or16
+~mux16
+~dmux
+~not16
+~mux4way16
+~mux8way16
+dmux4way
+dmux8way
